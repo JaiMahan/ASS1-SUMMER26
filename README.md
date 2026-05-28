@@ -105,7 +105,7 @@ _Good luck, Agent_.
 
 ### How to Run the Environment
 
-- Clone the repository for your computer
+- **Fork/Clone** the repository for your computer
 
 - Save the repo in your onw repo
 
@@ -129,7 +129,7 @@ _Good luck, Agent_.
 
 - Ensure you have pushed all the changes to your repo
 
-- Ensure that the repo is public
+- **Ensure that the repo is public**
 
 - In Canvas, save the link to clone your repo (e.g., https://github.com/GMU-CYSE/ASS1-SUMMER26.git)
 
