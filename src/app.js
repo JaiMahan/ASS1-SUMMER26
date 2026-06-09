@@ -25,8 +25,8 @@ const STORAGE_KEY = "ssp_session_v1";
  * - use regex, not DOM APIs
  */
 function sanitizeUsername(input) {
-  // TODO: implement
-  return "";
+  const str = String(input == null ? "" : input);
+  return str.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 20);
 
   
 }
@@ -40,7 +40,14 @@ function sanitizeUsername(input) {
  * - MUST use textContent (not innerHTML)
  */
 function renderNotifications(listEl, notifications) {
-  // TODO: implement
+  if (!listEl) return;
+  listEl.innerHTML = "";
+  const items = Array.isArray(notifications) ? notifications : [];
+  for (const note of items) {
+    const li = document.createElement("li");
+    li.textContent = String(note);
+    listEl.appendChild(li);
+  }
 }
 
 /** -----------------------------
@@ -62,8 +69,24 @@ function renderNotifications(listEl, notifications) {
  *   - notifications: array of strings
  */
 function parseProfileJson(jsonText) {
-  // TODO: implement
-  return null;
+  let data;
+  try {
+    data = JSON.parse(jsonText);
+  } catch (err) {
+    return null;
+  }
+  if (data === null || typeof data !== "object" || Array.isArray(data)) return null;
+  if (typeof data.displayName !== "string") return null;
+  if (data.role !== "user" && data.role !== "admin") return null;
+  if (!Array.isArray(data.notifications)) return null;
+  for (const n of data.notifications) {
+    if (typeof n !== "string") return null;
+  }
+  return {
+    displayName: data.displayName,
+    role: data.role,
+    notifications: data.notifications
+  };
 }
 
 /** -----------------------------
@@ -80,8 +103,14 @@ function parseProfileJson(jsonText) {
  * - Return parsed profile object or null
  */
 async function fetchUserProfile(url) {
-  // TODO: implement
-  return null;
+  try {
+    const response = await fetch(url);
+    if (!response || !response.ok) return null;
+    const text = await response.text();
+    return parseProfileJson(text);
+  } catch (err){
+    return null;
+  }
 }
 
 /** -----------------------------
@@ -99,7 +128,9 @@ async function fetchUserProfile(url) {
  * - Must NOT store notifications (assume those are dynamic)
  */
 function saveSessionToStorage(profile) {
-  // TODO: implement
+  if (!profile) return;
+  const safe = { displayName: profile.displayName, role: profile.role };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(safe));
 }
 
 /**
@@ -109,8 +140,15 @@ function saveSessionToStorage(profile) {
  * - Return object { displayName, role } if valid
  */
 function loadSessionFromStorage() {
-  // TODO: implement
-  return null;
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== "object") return null;
+    return { displayName: data.displayName, role: data.role };
+  } catch (err) {
+    return null;
+  }
 }
 
 /** -----------------------------
@@ -128,7 +166,8 @@ function loadSessionFromStorage() {
  * client-side logic can be manipulated; real authorization is server-side.
  */
 function computeAccessStatus(profile) {
-  // TODO: implement
+  if (!profile || typeof profile !== "object") return "DENIED";
+  if (profile.role === "admin") return "GRANTED";
   return "DENIED";
 }
 
